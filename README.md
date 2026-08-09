@@ -151,6 +151,3 @@ place it in `data/`.
   dataset is an established benchmark; the contribution here is the
   integrated cost-sensitive decision-support system built on top of it
 
-## License
-
-MIT — see [`LICENSE`](LICENSE).
