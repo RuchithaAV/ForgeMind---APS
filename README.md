@@ -9,8 +9,8 @@ Scania heavy trucks, using the [APS Failure at Scania Trucks
 dataset](https://archive.ics.uci.edu/dataset/421/aps+failure+at+scania+trucks)
 (UCI Machine Learning Repository).
 
-> **Status:** Phase 0–1 complete, dataset verified. Not a production
-> system — a research/portfolio project on a public benchmark dataset.
+> **Status:** Phase 0–2 complete, data-quality report generated. Not a
+> production system — a research/portfolio project on a public benchmark dataset.
 
 ---
 
@@ -123,7 +123,7 @@ place it in `data/`.
 
 - [x] Phase 0 — Project setup and environment
 - [x] Phase 1 — Industrial problem and dataset understanding
-- [ ] Phase 2 — Data loading and data-quality analysis
+- [x] Phase 2 — Data loading and data-quality analysis
 - [ ] Phase 3 — Preprocessing pipeline
 - [ ] Phase 4 — Baseline models
 - [ ] Phase 5 — SVM experiments
@@ -151,3 +151,6 @@ place it in `data/`.
   dataset is an established benchmark; the contribution here is the
   integrated cost-sensitive decision-support system built on top of it
 
+## License
+
+MIT — see [`LICENSE`](LICENSE).
