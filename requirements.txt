@@ -1,0 +1,19 @@
+# ForgeMind APS — core environment (Phase 0)
+# Additional packages (xgboost, lightgbm, imbalanced-learn, shap, streamlit)
+# will be added in the specific phase that justifies them, not upfront.
+
+python-dotenv==1.0.1
+
+numpy==1.26.4
+pandas==2.2.2
+scipy==1.13.1
+
+matplotlib==3.8.4
+seaborn==0.13.2
+
+scikit-learn==1.4.2
+
+jupyter==1.0.0
+notebook==7.1.3
+
+ucimlrepo==0.0.7

@@ -1,0 +1,37 @@
+# Byte-compiled / cache
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Environments
+.venv/
+venv/
+env/
+.env
+
+# OS
+.DS_Store
+
+# Data (never commit raw/processed data — see data/README.md for how to obtain it)
+data/*
+!data/README.md
+!data/.gitkeep
+
+# Trained model artifacts (large binary files — track via reports/results metadata instead)
+models/*
+!models/.gitkeep
+
+# Reports/figures generated at runtime
+reports/figures/*
+!reports/figures/.gitkeep
+
+# IDE
+.vscode/
+.idea/
+
+# Large dataset files
+dataset/
+dataset.zip
