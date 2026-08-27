@@ -125,7 +125,7 @@ place it in `data/`.
 - [x] Phase 1 — Industrial problem and dataset understanding
 - [x] Phase 2 — Data loading and data-quality analysis
 - [x] Phase 3 — Preprocessing pipeline
-- [ ] Phase 4 — Baseline models
+- [x] Phase 4 — Baseline models
 - [ ] Phase 5 — SVM experiments
 - [ ] Phase 6 — Tree models
 - [ ] Phase 7 — Boosting models
