@@ -109,7 +109,7 @@ ForgeMind-APS/
 ## Setup
 
 ```bash
-git clone https://github.com/<your-username>/ForgeMind-APS.git
+git clone https://github.com/RuchithaAV/ForgeMind---APS.git
 cd ForgeMind-APS
 python -m venv .venv
 source .venv/bin/activate      # Windows: .venv\Scripts\activate
