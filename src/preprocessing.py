@@ -43,16 +43,16 @@ def build_linear_preprocessor():
             ColumnDropper(columns=["cd_000"])
         ),
         (
-            "scaler",
-            RobustScaler()
-        ),
-        (
             "imputer", 
             SimpleImputer(
                 strategy="median",
                 add_indicator=True,
                 keep_empty_features=True
             )
+        ),
+        (
+            "scaler",
+            RobustScaler()
         )
     ])
       
