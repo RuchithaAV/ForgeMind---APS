@@ -9,7 +9,7 @@ Scania heavy trucks, using the [APS Failure at Scania Trucks
 dataset](https://archive.ics.uci.edu/dataset/421/aps+failure+at+scania+trucks)
 (UCI Machine Learning Repository).
 
-> **Status:** Phase 0–2 complete, data-quality report generated. Not a
+> **Status:** Phase 0–4 complete (Baseline models & cost benchmarking implemented). Not a
 > production system — a research/portfolio project on a public benchmark dataset.
 
 ---
@@ -109,7 +109,7 @@ ForgeMind-APS/
 ## Setup
 
 ```bash
-git clone https://github.com/RuchithaAV/ForgeMind---APS.git
+git clone https://github.com/RuchithaAV/ForgeMind---APS.git ForgeMind-APS
 cd ForgeMind-APS
 python -m venv .venv
 source .venv/bin/activate      # Windows: .venv\Scripts\activate

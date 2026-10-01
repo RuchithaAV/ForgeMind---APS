@@ -10,7 +10,7 @@ https://archive.ics.uci.edu/dataset/421/aps+failure+at+scania+trucks
 ## Files expected here (not committed)
 
 - `aps_failure_training_set.csv` — 60,000 rows, ~59,000 negative / ~1,000 positive
-- `aps_failure_test_set.csv` — 16,000 rows (official test set — held out until Phase 21)
+- `aps_failure_test_set.csv` — 16,000 rows (official test set — held out until Phase 16)
 
 ## Known parsing gotchas (handled explicitly in Phase 2, not silently)
 
