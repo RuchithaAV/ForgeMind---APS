@@ -209,3 +209,57 @@ def generate_oof_predictions(
         oof_probabilities,
         fold_results
     )
+
+
+def evaluate_at_threshold(
+    model_name,
+    y_true,
+    y_probability,
+    threshold=0.50
+):
+    """
+    Evaluate binary classification metrics and APS cost at a specific probability threshold.
+    """
+    y_pred = (np.asarray(y_probability) >= threshold).astype(int)
+    return calculate_classification_metrics(
+        model_name=model_name,
+        y_true=y_true,
+        y_pred=y_pred,
+        y_probability=y_probability,
+        threshold=threshold
+    )
+
+
+def best_cost_threshold(
+    y_true,
+    y_probability,
+    thresholds=None,
+    num_thresholds=1000
+):
+    """
+    Find the decision threshold that minimizes the total APS cost on out-of-fold probabilities.
+    """
+    if thresholds is None:
+        thresholds = np.linspace(0.001, 0.999, num_thresholds)
+
+    y_true_arr = np.asarray(y_true)
+    y_prob_arr = np.asarray(y_probability)
+
+    best_cost = float("inf")
+    best_thresh = 0.50
+    best_metrics = {}
+
+    for t in thresholds:
+        preds = (y_prob_arr >= t).astype(int)
+        cost_res = calculate_aps_cost(y_true_arr, preds)
+        if cost_res["aps_cost"] < best_cost:
+            best_cost = cost_res["aps_cost"]
+            best_thresh = float(t)
+            best_metrics = cost_res
+
+    return {
+        "threshold": best_thresh,
+        "aps_cost": best_cost,
+        "cost_per_truck": best_cost / len(y_true_arr),
+        **best_metrics
+    }
