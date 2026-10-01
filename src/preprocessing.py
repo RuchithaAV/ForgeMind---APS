@@ -31,7 +31,7 @@ class DuplicateDropper(BaseEstimator, TransformerMixin):
     """
 
     def __init__(self):
-        self.keep_indices_ = None
+        pass
 
     def fit(self, X, y=None):
         df = pd.DataFrame(X)
