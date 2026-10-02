@@ -230,36 +230,32 @@ def evaluate_at_threshold(
     )
 
 
-def best_cost_threshold(
-    y_true,
-    y_probability,
-    thresholds=None,
-    num_thresholds=1000
-):
+def best_cost_threshold(y_true, y_probability, thresholds=None, num_thresholds=1000):
+    """Cost-minimising threshold (predict positive if score >= threshold).
+
+    Default: exact sweep over every distinct score (works for probabilities
+    AND unbounded scores such as SVM decision values).
+    If `thresholds` is given, falls back to the old grid search.
     """
-    Find the decision threshold that minimizes the total APS cost on out-of-fold probabilities.
-    """
+    y_true_arr = np.asarray(y_true).astype(int)
+    scores = np.asarray(y_probability, dtype=float)
+
     if thresholds is None:
-        thresholds = np.linspace(0.001, 0.999, num_thresholds)
+        order = np.argsort(-scores, kind="stable")
+        s_sorted = scores[order]
+        tp = np.cumsum(y_true_arr[order])
+        fp = np.arange(1, len(scores) + 1) - tp
+        fn = y_true_arr.sum() - tp
+        cost = 10 * fp + 500 * fn
+        # only cut where the score changes, so ties are never split
+        cost = np.where(np.r_[s_sorted[1:] != s_sorted[:-1], True], cost, np.inf)
+        best_thresh = float(s_sorted[int(np.argmin(cost))])
+    else:
+        costs = [calculate_aps_cost(y_true_arr, (scores >= t).astype(int))["aps_cost"]
+                 for t in thresholds]
+        best_thresh = float(thresholds[int(np.argmin(costs))])
 
-    y_true_arr = np.asarray(y_true)
-    y_prob_arr = np.asarray(y_probability)
-
-    best_cost = float("inf")
-    best_thresh = 0.50
-    best_metrics = {}
-
-    for t in thresholds:
-        preds = (y_prob_arr >= t).astype(int)
-        cost_res = calculate_aps_cost(y_true_arr, preds)
-        if cost_res["aps_cost"] < best_cost:
-            best_cost = cost_res["aps_cost"]
-            best_thresh = float(t)
-            best_metrics = cost_res
-
-    return {
-        "threshold": best_thresh,
-        "aps_cost": best_cost,
-        "cost_per_truck": best_cost / len(y_true_arr),
-        **best_metrics
-    }
+    best_metrics = calculate_aps_cost(y_true_arr, (scores >= best_thresh).astype(int))
+    return {**best_metrics,
+            "threshold": best_thresh,
+            "cost_per_truck": best_metrics["aps_cost"] / len(y_true_arr)}
