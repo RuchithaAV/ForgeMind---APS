@@ -4,7 +4,7 @@
 
 A portfolio machine learning project investigating how multiple ML approaches can be benchmarked and combined with cost-sensitive decision-making to identify rare APS (Air Pressure System) failures in Scania heavy trucks, using the [APS Failure at Scania Trucks dataset](https://archive.ics.uci.edu/dataset/421/aps+failure+at+scania+trucks) (UCI Machine Learning Repository).
 
-> **Status:** Phase 0–4 complete (Data Quality, Leak-Free Preprocessing Pipeline, Baseline Models & Cost Optimization Benchmarked). Not a production system — a research/portfolio project on a public benchmark dataset.
+> **Status:** Phase 0–5 complete (Data Quality, Leak-Free Preprocessing Pipeline, Baseline Models, Linear & Kernel SVM Benchmarks & Cost Optimization). Not a production system — a research/portfolio project on a public benchmark dataset.
 
 ---
 
@@ -44,23 +44,39 @@ $$\text{Expected Cost} = 10 \times \text{FP} + 500 \times \text{FN}$$
 
 ---
 
-## Phase 4 Baseline & Cost Optimization Benchmark
+## Current Model Benchmark & Cost Leaderboard
 
-All models are evaluated on the 60,000-row training set using **5-fold Stratified Cross-Validation**:
+All models are evaluated on the 60,000-row training set using **5-fold Stratified Cross-Validation** with leak-free preprocessing (signed-log compaction + median imputation + standard scaling + duplicate indicator pruning). Out-of-fold decision boundaries are evaluated using **fold-wise honest cost** (threshold chosen on outer folds, scored on the holdout fold):
 
-| Model / Strategy | Threshold ($t$) | ROC-AUC | PR-AUC | FP | FN | Total Cost | Cost / Truck |
-|---|---|---|---|---|---|---|---|
-| **All-Positive Heuristic** | 0.50 | 0.5000 | 0.0167 | 59,000 | 0 | **$590,000** | $9.83 |
-| **All-Negative Heuristic** | 0.50 | 0.5000 | 0.0167 | 0 | 1,000 | **$500,000** | $8.33 |
-| **Logistic Regression (Default, Log OFF)** | 0.50 | 0.5833 | 0.2751 | 13,776 | 536 | **$405,760** | $6.76 |
-| **Logistic Regression (Tuned, Log OFF)** | 0.518 | 0.5833 | 0.2751 | 4,809 | 583 | **$339,590** | $5.66 |
-| **Balanced LogReg + Signed-Log (Dups dropped)** | 0.468 | 0.9837 | 0.7798 | 2,109 | 58 | **$50,090** | $0.83 |
-| **Unweighted LogReg + Signed-Log (OOF-tuned)** | 0.024 | **0.9853** | **0.8000** | 1,968 | 54 | **$46,680** | **$0.78** |
+| Model Family | Configuration / Variant | ROC-AUC | PR-AUC | Honest FP | Honest FN | Total Honest Cost | Cost / Truck | Cost Saved vs. Baseline |
+|---|---|---|---|---|---|---|---|---|
+| **Heuristic** | All-Positive Strategy | 0.5000 | 0.0167 | 59,000 | 0 | **$590,000** | $9.83 | -18.0% |
+| **Heuristic** | Do Nothing (All-Negative) | 0.5000 | 0.0167 | 0 | 1,000 | **$500,000** | $8.33 | 0.0% (Ref) |
+| **Logistic Regression** | Default Solver (Log OFF, $t=0.50$) | 0.5833 | 0.2751 | 13,776 | 536 | **$405,760** | $6.76 | +18.8% |
+| **Logistic Regression** | Tuned Threshold (Log OFF) | 0.5833 | 0.2751 | 4,809 | 583 | **$339,590** | $5.66 | +32.1% |
+| **Logistic Regression** | Balanced + Signed-Log | 0.9837 | 0.7798 | 2,143 | 61 | **$51,930** | $0.87 | +89.6% |
+| **Logistic Regression** | Unweighted + Signed-Log | 0.9853 | 0.8000 | 1,975 | 58 | **$48,750** | $0.81 | +90.2% |
+| **Kernel SVM** | RBF Nystroem ($\gamma=0.03/D, m=1000, C=10$) | 0.9846 | 0.8061 | 2,005 | 55 | **$47,550** | $0.79 | +90.5% |
+| **Kernel SVM** | Linear + RBF Nystroem ($\gamma=0.03/D, C=10$) | 0.9848 | 0.8343 | 1,744 | 60 | **$47,440** | $0.79 | +90.5% |
+| **Linear SVM (Best)** | **LinearSVC ($C=1.0$, unweighted, signed-log)** | **0.9855** | **0.8371** | **2,110** | **48** | **$45,100** | **$0.75** | **+91.0%** |
 
-### Key Diagnostic Takeaways:
-1. **Signed-Log Transformation ($\text{sign}(x) \cdot \log(1 + |x|)$):** Resolves solver non-convergence caused by zero-IQR heavy-tailed features, boosting ROC-AUC from **0.5833 $\to$ 0.9853** and cutting cost from **$339k $\to$ $46k**.
-2. **Duplicate Indicator Pruning:** `DuplicateDropper` removes 112 identical missingness masks, reducing the feature space from 337 to 225 without sacrificing predictive ranking.
-3. **Class Weighting vs. Threshold Tuning:** Class weighting shifts the unweighted decision boundary from $t \approx 0.024$ towards $t \approx 0.468$, demonstrating that both yield equivalent ranking power once optimization converges.
+---
+
+## Key Experimental Findings (Phases 2 – 5)
+
+1. **Signed-Log Transformation ($\text{sign}(x) \cdot \log(1 + |x|)$):**
+   - Resolves solver non-convergence caused by 46 zero-IQR heavy-tailed features.
+   - Boosts baseline ROC-AUC from **0.5833 $\to$ 0.9855** and slashes total maintenance cost from **$339,590 $\to$ $45,100** (an **86.7% reduction** in cost over raw scaling).
+2. **Duplicate Indicator Pruning:**
+   - `DuplicateDropper` eliminates 112 redundant missingness masks, condensing the feature space from 337 to 225 predictors with zero degradation in ranking quality or stability.
+3. **Linear Margin Maximization Outperforms Probabilistic Logistic Regression:**
+   - The unweighted `LinearSVC` ($C=1.0$) establishes a new cost minimum of **$45,100** ($0.75 / truck), outperforming unweighted Logistic Regression ($48,750) by **7.5%** and balanced Logistic Regression ($51,930) by **13.1%**.
+   - Linear SVM won in **5 of 5 folds** against balanced Logistic Regression and **4 of 5 folds** against unweighted Logistic Regression.
+4. **Kernel Approximations & Boundary Geometry:**
+   - Non-linear kernel approximations using Nystroem RBF features (300 to 1,000 components) yielded **$47,550**, while concatenated Linear + RBF embeddings achieved **$47,440**.
+   - Because pure Linear SVM beats non-linear kernel expansions with lower computational overhead (57s vs 388s) and higher PR-AUC (0.8371 vs 0.8061), it demonstrates that after signed-log compaction, the APS classification boundary in 225-dimensional space is predominantly linearly separable.
+5. **Exact OOF Threshold Sweep:**
+   - Upgraded `best_cost_threshold` from a grid-based search to an exact $O(N \log N)$ cumulative sum sweep over unbounded decision scores, ensuring precise cost-optimal cutoff without threshold tie splitting.
 
 ---
 
@@ -83,7 +99,8 @@ ForgeMind-APS/
 ├── notebooks/                         # Sequential phase research notebooks
 │   ├── 02_data_quality_report.ipynb   # Phase 2: Missingness, distributions & invariant column analysis
 │   ├── 03_preprocessing_pipeline.ipynb# Phase 3: Preprocessing pipeline, scaling & duplicate indicator tests
-│   └── 04_baseline_models.ipynb       # Phase 4: Baseline benchmarks, scaling diagnostics & threshold tuning
+│   ├── 04_baseline_models.ipynb       # Phase 4: Baseline benchmarks, scaling diagnostics & threshold tuning
+│   └── 05_svm_experiments.ipynb       # Phase 5: LinearSVC, RBF Nystroem kernel approximation & fold-wise cost evaluation
 ├── reports/
 │   ├── figures/                       # Generated diagnostic and ROC/PR plots
 │   └── results/                       # CSV export artifacts for benchmark metrics
@@ -91,7 +108,12 @@ ForgeMind-APS/
 │       ├── phase4_logistic_fold_results.csv
 │       ├── phase4_preprocessing_comparison.csv
 │       ├── phase4_threshold_results.csv
-│       └── phase4_variant_results.csv
+│       ├── phase4_variant_results.csv
+│       ├── phase5_fold_costs.csv
+│       ├── phase5_linear_plus_rbf_results.csv
+│       ├── phase5_linear_svm_results.csv
+│       ├── phase5_rbf_nystroem_results.csv
+│       └── phase5_summary.csv
 ├── models/                            # Trained model artifacts (gitignored)
 └── app/                               # Future Streamlit decision-support dashboard
 ```
@@ -131,7 +153,7 @@ jupyter lab
 - [x] **Phase 2** — Robust data loading and data-quality inspection
 - [x] **Phase 3** — Leak-free preprocessing pipeline & signed-log heavy-tail compaction
 - [x] **Phase 4** — Baseline models, scaling diagnostics & out-of-fold cost threshold tuning
-- [ ] **Phase 5** — Linear & Non-linear SVM experiments
+- [x] **Phase 5** — Linear & Non-linear SVM experiments (LinearSVC, Nystroem RBF kernel approximation & fold-wise honest cost evaluation)
 - [ ] **Phase 6** — Decision Tree and Random Forest ensembles
 - [ ] **Phase 7** — Gradient Boosting (XGBoost / LightGBM / CatBoost)
 - [ ] **Phase 8** — Multilayer Perceptron (MLP) Neural Network
