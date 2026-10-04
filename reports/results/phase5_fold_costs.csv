@@ -1,0 +1,7 @@
+,SVM C=1 unweighted,LogReg unweighted,LogReg balanced
+fold 1,8920,8050,9820
+fold 2,10650,10830,12070
+fold 3,8480,9660,9350
+fold 4,8420,10030,11100
+fold 5,8630,10180,9590
+total,45100,48750,51930

@@ -1,0 +1,4 @@
+model,gamma_mult,C,n_components,seconds,warn_folds,roc_auc,pr_auc,tuned_cost,honest_cost,honest_fp,honest_fn
+Linear+RBF-Nystroem,0.03,10.0,1000,388.6,0,0.9848,0.8343,46420,47440,1744,60
+Linear+RBF-Nystroem,0.1,1.0,1000,176.8,0,0.9855,0.8379,45620,48070,2157,53
+Linear+RBF-Nystroem,0.03,1.0,1000,163.9,0,0.9855,0.8375,45360,48090,2009,56

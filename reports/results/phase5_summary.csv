@@ -1,0 +1,7 @@
+model,honest_cost,cost_per_truck,saved_vs_do_nothing_%
+Linear SVM (best),45100,0.752,91.0
+Linear + RBF (best),47440,0.791,90.5
+RBF-Nystroem (best),47550,0.792,90.5
+LogReg unweighted + log,48750,0.812,90.2
+LogReg balanced + log,51930,0.866,89.6
+Do nothing,500000,8.333,0.0
