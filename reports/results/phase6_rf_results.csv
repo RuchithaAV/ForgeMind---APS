@@ -1,0 +1,4 @@
+model,n_estimators,min_samples_leaf,class_weight,seconds,distinct_scores,roc_auc,pr_auc,tuned_cost,honest_cost,honest_fp,honest_fn
+RandomForest,100,5,,98.0,6031,0.9853419406779662,0.8563335354720052,42290,44220,2222,44
+RandomForest,100,20,,103.8,12967,0.9843698644067795,0.81190681045031,46030,47520,2902,37
+RandomForest,100,50,,101.5,21267,0.98491,0.7616881971009799,50070,52260,3476,35

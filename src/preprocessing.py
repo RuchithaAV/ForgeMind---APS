@@ -1,3 +1,4 @@
+
 import numpy as np
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
@@ -12,17 +13,24 @@ class ColumnDropper(BaseEstimator, TransformerMixin):
     A simple transformer that removes selected columns.
     """
 
-    def __init__(self, columns):
-        self.columns = columns
+    def __init__(self, columns=None):
+        self.columns = columns if columns is not None else []
 
     def fit(self, X, y=None):
         return self
 
     def transform(self, X):
-        return X.drop(
-            columns=self.columns,
-            errors="ignore"
-        )
+        if isinstance(X, pd.DataFrame):
+            return X.drop(
+                columns=self.columns,
+                errors="ignore"
+            )
+        return X
+
+    def get_feature_names_out(self, input_features=None):
+        if input_features is None:
+            return None
+        return np.array([f for f in input_features if f not in self.columns], dtype=object)
 
 
 class DuplicateDropper(BaseEstimator, TransformerMixin):
@@ -31,7 +39,7 @@ class DuplicateDropper(BaseEstimator, TransformerMixin):
     """
 
     def __init__(self):
-        pass
+        self.keep_indices_ = None
 
     def fit(self, X, y=None):
         df = pd.DataFrame(X)
@@ -44,6 +52,13 @@ class DuplicateDropper(BaseEstimator, TransformerMixin):
         if isinstance(X, pd.DataFrame):
             return X.iloc[:, self.keep_indices_]
         return X[:, self.keep_indices_]
+
+    def get_feature_names_out(self, input_features=None):
+        if self.keep_indices_ is None:
+            raise RuntimeError("DuplicateDropper must be fitted before get_feature_names_out.")
+        if input_features is None:
+            return np.array([f"x{i}" for i in self.keep_indices_], dtype=object)
+        return np.asarray(input_features)[self.keep_indices_]
 
 
 def signed_log1p(X):
@@ -112,3 +127,30 @@ def make_cv_splitter():
         shuffle=True,
         random_state=42
     )
+
+
+def build_tree_preprocessor(drop_duplicates=True):
+    """Preprocessing for tree models: no log transform and no scaling.
+       Trees only compare values within a feature, so scale and skew don't matter.
+       Median imputation + missing indicators keep the feature set comparable
+       with the linear models."""
+    steps = [
+        (
+            "drop_constant",
+            ColumnDropper(columns=["cd_000"])
+        ),
+        (
+            "imputer",
+            SimpleImputer(
+                strategy="median",
+                add_indicator=True,
+                keep_empty_features=True
+            )
+        ),
+    ]
+
+    if drop_duplicates:
+        steps.append(("drop_duplicates", DuplicateDropper()))
+
+    return Pipeline(steps)
+    
